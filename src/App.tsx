@@ -46,10 +46,11 @@ function App() {
           <div className="todo-input">
             <input
               type="text"
+              id="todo-input"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               placeholder="Add a new todo..."
-              onKeyPress={(e) => e.key === 'Enter' && addTodo()}
+              onKeyDown={(e) => e.key === 'Enter' && addTodo()}
             />
             <button onClick={addTodo}>Add</button>
           </div>
@@ -63,19 +64,6 @@ function App() {
                 </button>
               </li>
             ))}
-          </ul>
-        </section>
-
-        <section className="features-section">
-          <h2>Project Features</h2>
-          <ul className="features-list">
-            <li>✅ TypeScript for type safety</li>
-            <li>⚡ Vite for fast development</li>
-            <li>⚛️ React 18 with hooks</li>
-            <li>🎨 CSS modules ready</li>
-            <li>📱 Mobile-responsive design</li>
-            <li>🔧 ESLint & Prettier configured</li>
-            <li>🚀 Ready for mobile deployment</li>
           </ul>
         </section>
       </main>
