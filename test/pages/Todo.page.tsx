@@ -25,7 +25,7 @@ export class TodoPage {
       return screen.queryAllByText(value).map((textElement) => {return (textElement.parentElement!)});
     }
 
-    // public getAllTodoItems(): HTMLElement[] {
-    //     return screen.queryAllByRole()
-    // }
+    public getAllTodoItems(): HTMLElement[] {
+        return screen.queryAllByRole('listitem');
+    }
 }

@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, type Matcher } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import App from '../src/App'
 import { TodoPage } from './pages/Todo.page';
 
@@ -33,6 +33,7 @@ describe('App Component', () => {
     const item2 = 'Add a unique todo 2';
     await todoPage.addItem(item1);
     await todoPage.addItem(item2);
+    expect(todoPage.getAllTodoItems()).toHaveLength(2);
     expect(todoPage.getTodoItemsByText(item1)).toHaveLength(1);
     expect(todoPage.getTodoItemsByText(item2)).toHaveLength(1);
   })
@@ -42,6 +43,7 @@ describe('App Component', () => {
     await todoPage.addItem(item);
     expect(todoPage.getTodoItemsByText(item)).toHaveLength(1);
     await todoPage.deleteItem((todoPage.getTodoItemsByText(item))[0]);
+    expect(todoPage.getAllTodoItems()).toHaveLength(0);
     expect(todoPage.getTodoItemsByText(item)).toHaveLength(0);
   })
 
@@ -51,6 +53,7 @@ describe('App Component', () => {
     await todoPage.addItem(item);
     expect(todoPage.getTodoItemsByText(item)).toHaveLength(2);
     await todoPage.deleteItem((todoPage.getTodoItemsByText(item))[0]);
+    expect(todoPage.getAllTodoItems()).toHaveLength(1);
     expect(todoPage.getTodoItemsByText(item)).toHaveLength(1);
   })
 })
