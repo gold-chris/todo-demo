@@ -1,5 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import './App.css'
+
+const API_BASE_URL = 'http://localhost:5000'; // Replace with your backend URL
 
 interface TodoItem {
   id: number
@@ -11,28 +13,86 @@ function App() {
   const [todos, setTodos] = useState<TodoItem[]>([])
   const [inputValue, setInputValue] = useState('')
 
-  const addTodo = () => {
+  const fetchTodos = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/todos`);
+      if (!response.ok) throw new Error('Failed to fetch todos');
+      const data = await response.json();
+      setTodos(data); // Replace local state with server data (server wins)
+    } catch (error) {
+      console.error('Error fetching todos:', error);
+      // Optional: Add user notification here (e.g., toast)
+    }
+  };
+
+  useEffect(() => {
+    fetchTodos(); // Fetch on component mount (page load)
+    
+    const intervalId = setInterval(fetchTodos, 300000); // Every 5 minutes
+    
+    return () => clearInterval(intervalId); // Cleanup on unmount
+  }, []);
+
+  const addTodo = async () => {
     if (inputValue.trim() !== '') {
       const newTodo: TodoItem = {
         id: Date.now(),
         text: inputValue,
         completed: false
       }
-      setTodos([...todos, newTodo])
-      setInputValue('')
+      setTodos([...todos, newTodo]);
+      setInputValue('');
+           // Async sync to backend (new)
+      try {
+        await fetch(`${API_BASE_URL}/todos`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newTodo),
+        });
+        // After sync, optionally re-fetch to ensure consistency (but keeping it async as per request)
+      } catch (error) {
+        console.error('Error adding todo:', error);
+        // On next fetch, server will correct if needed
+      }
     }
   }
 
-  const toggleTodo = (id: number) => {
-    setTodos(todos.map(todo =>
+  const toggleTodo = async (id: number) => {
+    const updatedTodos = todos.map(todo =>
       todo.id === id ? { ...todo, completed: !todo.completed } : todo
-    ))
+    );
+    setTodos(updatedTodos); // Optimistic local update
+    
+    // Async sync to backend (new)
+    const todoToUpdate = updatedTodos.find(todo => todo.id === id);
+    if (todoToUpdate) {
+      try {
+        await fetch(`${API_BASE_URL}/todo/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(todoToUpdate),
+        });
+      } catch (error) {
+        console.error('Error updating todo:', error);
+        // On next fetch, server will correct
+      }
+    }
   }
 
-  const deleteTodo = (id: number) => {
-    setTodos(todos.filter(todo => todo.id !== id))
-  }
-
+  const deleteTodo = async (id: number) => {
+    setTodos(todos.filter(todo => todo.id !== id)); // Optimistic local update
+    
+    // Async sync to backend (new)
+    try {
+      await fetch(`${API_BASE_URL}/todo/${id}`, {
+        method: 'DELETE',
+      });
+    } catch (error) {
+      console.error('Error deleting todo:', error);
+      // If delete fails, next fetch will restore from server if needed
+    }
+  };
+  
   return (
     <div className="app">
       <header className="app-header">
